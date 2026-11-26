@@ -1,7 +1,8 @@
-import { CalendarClock, Check, Trash2 } from 'lucide-react'
+﻿import { CalendarClock, Check, Trash2 } from 'lucide-react'
 import { PriorityIndicator } from '@/components/ui/Badges'
 import { formatDateTime } from '@/lib/format'
 import type { FollowUp } from '@/types'
+import { Avatar } from '@/components/ui/Avatar'
 
 interface Props {
   followUp: FollowUp
@@ -14,32 +15,50 @@ interface Props {
 
 export function FollowUpCard({ followUp, leadName, compact = false, onToggle, onDelete, onOpenLead }: Props) {
   const overdue = !followUp.completed && Date.parse(followUp.scheduledAt) < Date.now()
+  
+  // Determine border color based on priority
+  const borderClass = followUp.priority === 'high' ? 'border-l-rose-500' : followUp.priority === 'medium' ? 'border-l-amber-400' : 'border-l-indigo-300'
+
   return (
-    <div className={`flex items-start gap-3 rounded-lg border bg-white ${compact ? 'p-3' : 'p-4 shadow-sm'} ${overdue ? 'border-rose-200' : 'border-slate-200'}`}>
+    <div className={`group relative flex items-start gap-4 rounded-xl border border-slate-200 bg-white border-l-4 ${borderClass} ${compact ? 'p-3' : 'p-4 shadow-sm hover:shadow-md'} transition-all ${overdue ? 'bg-rose-50/30' : ''}`}>
+      
+      {/* Custom Checkbox */}
       <button
         type="button"
         role="checkbox"
         aria-checked={followUp.completed}
-        aria-label={followUp.completed ? 'Mark as not done' : 'Mark as done'}
         onClick={() => onToggle(followUp.id)}
-        className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border ${followUp.completed ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-300 bg-white hover:border-slate-400'}`}
+        className={`mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${followUp.completed ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 bg-white hover:border-indigo-500 text-transparent hover:text-indigo-200'}`}
       >
-        {followUp.completed && <Check className="size-3.5" aria-hidden="true" />}
+        <Check className="size-3.5" strokeWidth={3} aria-hidden="true" />
       </button>
+
       <div className="min-w-0 flex-1">
-        {leadName && (
-          <button type="button" onClick={onOpenLead} className="text-sm font-medium text-slate-900 hover:text-indigo-700 hover:underline">{leadName}</button>
-        )}
-        <p className={`text-sm ${followUp.completed ? 'text-slate-400 line-through' : 'text-slate-600'}`}>{followUp.notes || 'No notes'}</p>
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-          <span className={`inline-flex items-center gap-1.5 text-xs ${overdue ? 'font-medium text-rose-700' : 'text-slate-500'}`}>
-            <CalendarClock className="size-3.5" aria-hidden="true" />{overdue && 'Overdue · '}{formatDateTime(followUp.scheduledAt)}
-          </span>
+        <div className="flex items-center gap-2 mb-1">
+          {leadName && (
+            <button type="button" onClick={onOpenLead} className="flex items-center gap-1.5 text-sm font-semibold text-slate-900 hover:text-indigo-700 transition-colors">
+              {!compact && <Avatar name={leadName} size="sm" />}
+              {leadName}
+            </button>
+          )}
           <PriorityIndicator priority={followUp.priority} />
         </div>
+        
+        <p className={`text-sm ${followUp.completed ? 'text-slate-400 line-through' : 'text-slate-700 font-medium'}`}>
+          {followUp.notes || 'No additional notes.'}
+        </p>
+        
+        <div className="mt-2 flex items-center gap-1.5">
+          <span className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium ${overdue && !followUp.completed ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-600'}`}>
+            <CalendarClock className="size-3.5" aria-hidden="true" />
+            {overdue && !followUp.completed && 'Overdue: '}
+            {formatDateTime(followUp.scheduledAt)}
+          </span>
+        </div>
       </div>
+
       {onDelete && (
-        <button type="button" onClick={() => onDelete(followUp.id)} aria-label="Delete follow-up" className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-rose-700">
+        <button type="button" onClick={() => onDelete(followUp.id)} aria-label="Remove reminder" className="opacity-0 group-hover:opacity-100 rounded-md p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all">
           <Trash2 className="size-4" />
         </button>
       )}
