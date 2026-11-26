@@ -6,13 +6,13 @@ import { groupFollowUps, type FollowUpGroup } from '@/lib/leads'
 import { FollowUpCard } from '@/components/followups/FollowUpCard'
 
 const TABS: { id: FollowUpGroup; label: string; empty: string }[] = [
-  { id: 'upcoming', label: 'Upcoming', empty: 'Nothing scheduled. New follow-ups will show up here.' },
+  { id: 'upcoming', label: 'Upcoming', empty: 'Nothing scheduled. Open a lead and choose Schedule to add one.' },
   { id: 'overdue', label: 'Overdue', empty: 'No overdue follow-ups.' },
   { id: 'completed', label: 'Completed', empty: 'Completed follow-ups will show up here.' },
 ]
 
 export function FollowUpsPage() {
-  const { followUps, leads, toggleFollowUp } = useCrm()
+  const { followUps, leads, toggleFollowUp, deleteFollowUp } = useCrm()
   const { viewLead } = useUi()
   const [tab, setTab] = useState<FollowUpGroup>('upcoming')
   const groups = groupFollowUps(followUps)
@@ -45,7 +45,16 @@ export function FollowUpsPage() {
           </div>
         ) : groups[tab].map((f) => {
           const lead = leads.find((l) => l.id === f.leadId)
-          return <FollowUpCard key={f.id} followUp={f} leadName={lead?.name ?? 'Unknown lead'} onToggle={toggleFollowUp} onOpenLead={() => lead && viewLead(lead.id)} />
+          return (
+            <FollowUpCard
+              key={f.id}
+              followUp={f}
+              leadName={lead?.name ?? 'Unknown lead'}
+              onToggle={toggleFollowUp}
+              onDelete={deleteFollowUp}
+              onOpenLead={() => lead && viewLead(lead.id)}
+            />
+          )
         })}
       </div>
     </div>
