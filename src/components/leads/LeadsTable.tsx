@@ -1,13 +1,12 @@
-import { ArrowDown, ArrowUp, ArrowUpDown, Eye, Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Eye } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { LeadStatusBadge } from '@/components/ui/Badges'
 import { formatDate } from '@/lib/format'
-import type { Lead, SortKey, SortState } from '@/types'
+import type { Lead, SortState } from '@/types'
 
-interface LeadsTableProps {
+interface Props {
   leads: Lead[]
-  sort: SortState
-  onSort: (key: SortKey) => void
+  onSort: (key: SortState['key']) => void
   selectable?: boolean
   selectedIds?: string[]
   onToggleOne?: (id: string) => void
@@ -17,70 +16,59 @@ interface LeadsTableProps {
   onDelete: (lead: Lead) => void
 }
 
-function SortHeader({ label, k, sort, onSort, className = '' }: { label: string; k: SortKey; sort: SortState; onSort: (k: SortKey) => void; className?: string }) {
-  const active = sort.key === k
-  const Icon = !active ? ArrowUpDown : sort.direction === 'asc' ? ArrowUp : ArrowDown
-  return (
-    <th scope="col" aria-sort={active ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'} className={`px-4 py-2.5 text-left font-medium ${className}`}>
-      <button type="button" onClick={() => onSort(k)} className="inline-flex items-center gap-1.5 rounded hover:text-slate-900">
-        {label}<Icon className={`size-3.5 ${active ? 'text-indigo-600' : 'text-slate-400'}`} aria-hidden="true" />
-      </button>
-    </th>
-  )
-}
-
-export function LeadsTable({ leads, sort, onSort, selectable = false, selectedIds = [], onToggleOne, onToggleAll, onView, onEdit, onDelete }: LeadsTableProps) {
+export function LeadsTable({
+  leads, onSort, selectable, selectedIds = [], onToggleOne, onToggleAll, onView, onEdit, onDelete,
+}: Props) {
   const allSelected = leads.length > 0 && leads.every((l) => selectedIds.includes(l.id))
-  const iconBtn = 'rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[820px] text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50 text-xs text-slate-500">
+      <table className="w-full text-left text-sm text-slate-600">
+        <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
           <tr>
             {selectable && (
-              <th scope="col" className="w-10 px-4 py-2.5">
-                <input type="checkbox" aria-label="Select all leads on this page" checked={allSelected} onChange={onToggleAll} className="size-4 rounded border-slate-300 accent-indigo-600" />
+              <th className="w-10 px-4 py-3">
+                <input type="checkbox" checked={allSelected} onChange={onToggleAll} className="size-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600" />
               </th>
             )}
-            <SortHeader label="Name" k="name" sort={sort} onSort={onSort} />
-            <th scope="col" className="px-4 py-2.5 text-left font-medium">Email</th>
-            <SortHeader label="Company" k="company" sort={sort} onSort={onSort} />
-            <SortHeader label="Source" k="source" sort={sort} onSort={onSort} />
-            <SortHeader label="Status" k="status" sort={sort} onSort={onSort} />
-            <SortHeader label="Date added" k="createdAt" sort={sort} onSort={onSort} />
-            <th scope="col" className="px-4 py-2.5 text-right font-medium">Actions</th>
+            <th className="px-4 py-3 font-medium cursor-pointer hover:text-slate-900" onClick={() => onSort('name')}>Name</th>
+            <th className="px-4 py-3 font-medium cursor-pointer hover:text-slate-900 hidden md:table-cell" onClick={() => onSort('company')}>Company</th>
+            <th className="px-4 py-3 font-medium cursor-pointer hover:text-slate-900 hidden lg:table-cell" onClick={() => onSort('source')}>Source</th>
+            <th className="px-4 py-3 font-medium cursor-pointer hover:text-slate-900" onClick={() => onSort('status')}>Status</th>
+            <th className="px-4 py-3 font-medium cursor-pointer hover:text-slate-900 hidden sm:table-cell" onClick={() => onSort('createdAt')}>Recorded</th>
+            <th className="w-16 px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
-          {leads.map((lead) => {
-            const selected = selectedIds.includes(lead.id)
-            return (
-              <tr key={lead.id} className={selected ? 'bg-indigo-50/40' : 'hover:bg-slate-50'}>
-                {selectable && (
-                  <td className="px-4 py-2.5">
-                    <input type="checkbox" aria-label={`Select ${lead.name}`} checked={selected} onChange={() => onToggleOne?.(lead.id)} className="size-4 rounded border-slate-300 accent-indigo-600" />
-                  </td>
-                )}
-                <td className="px-4 py-2.5">
-                  <button type="button" onClick={() => onView(lead)} className="flex items-center gap-2.5 rounded text-left font-medium text-slate-900 hover:text-indigo-700">
-                    <Avatar name={lead.name} size="sm" />{lead.name}
-                  </button>
+          {leads.map((lead) => (
+            <tr key={lead.id} className="group transition-colors hover:bg-slate-50/80">
+              {selectable && (
+                <td className="px-4 py-3">
+                  <input type="checkbox" checked={selectedIds.includes(lead.id)} onChange={() => onToggleOne?.(lead.id)} className="size-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600" />
                 </td>
-                <td className="px-4 py-2.5 text-slate-600">{lead.email}</td>
-                <td className="px-4 py-2.5 text-slate-600">{lead.company}</td>
-                <td className="px-4 py-2.5 text-slate-600">{lead.source}</td>
-                <td className="px-4 py-2.5"><LeadStatusBadge status={lead.status} /></td>
-                <td className="whitespace-nowrap px-4 py-2.5 text-slate-500">{formatDate(lead.createdAt)}</td>
-                <td className="px-4 py-2.5">
-                  <div className="flex justify-end gap-0.5">
-                    <button type="button" className={iconBtn} aria-label={`View ${lead.name}`} onClick={() => onView(lead)}><Eye className="size-4" /></button>
-                    <button type="button" className={iconBtn} aria-label={`Edit ${lead.name}`} onClick={() => onEdit(lead)}><Pencil className="size-4" /></button>
-                    <button type="button" className={`${iconBtn} hover:text-rose-700`} aria-label={`Delete ${lead.name}`} onClick={() => onDelete(lead)}><Trash2 className="size-4" /></button>
+              )}
+              <td className="px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Avatar name={lead.name} size="sm" />
+                  <div>
+                    <p className="font-medium text-slate-900">{lead.name}</p>
+                    <p className="text-xs text-slate-500 md:hidden">{lead.company}</p>
                   </div>
-                </td>
-              </tr>
-            )
-          })}
+                </div>
+              </td>
+              <td className="px-4 py-3 hidden md:table-cell">{lead.company}</td>
+              <td className="px-4 py-3 hidden lg:table-cell text-slate-500">{lead.source}</td>
+              <td className="px-4 py-3"><LeadStatusBadge status={lead.status} /></td>
+              <td className="px-4 py-3 hidden sm:table-cell text-slate-500">{formatDate(lead.createdAt)}</td>
+              <td className="px-4 py-3 text-right">
+                <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  <button onClick={() => onView(lead)} className="rounded p-1.5 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600" title="View"><Eye className="size-4" /></button>
+                  <button onClick={() => onEdit(lead)} className="rounded p-1.5 text-slate-400 hover:bg-amber-50 hover:text-amber-600" title="Edit"><Pencil className="size-4" /></button>
+                  <button onClick={() => onDelete(lead)} className="rounded p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600" title="Remove"><Trash2 className="size-4" /></button>
+                </div>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
