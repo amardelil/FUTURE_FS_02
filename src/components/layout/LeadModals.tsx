@@ -9,8 +9,9 @@ import { LeadDetailsDrawer } from '@/components/leads/LeadDetailsDrawer'
 import { LeadForm } from '@/components/leads/LeadForm'
 import { activitiesForLead } from '@/lib/leads'
 import type { LeadFormValues } from '@/types'
+import { MESSAGES } from '@/lib/copy'
 
-/** Global overlays: lead form, details drawer, delete confirmation, and toast. */
+/** Global overlays: customer form, details drawer, delete confirmation, and toast. */
 export function LeadModals() {
   const crm = useCrm()
   const ui = useUi()
@@ -24,7 +25,7 @@ export function LeadModals() {
     const ok = editing ? await crm.updateLead(editing.id, values) : await crm.addLead(values)
     setBusy(false)
     if (!ok) return
-    ui.showToast(editing ? `Saved changes to ${values.name}` : `${values.name} added to your leads`)
+    ui.showToast(editing ? MESSAGES.customerSaved : MESSAGES.customerAdded)
     ui.closeLeadForm()
   }
 
@@ -35,7 +36,7 @@ export function LeadModals() {
     setBusy(false)
     if (!ok) return
     if (detailsLeadId && deleteIds.includes(detailsLeadId)) ui.viewLead(null)
-    ui.showToast(deleteIds.length === 1 ? 'Lead deleted' : `${deleteIds.length} leads deleted`)
+    ui.showToast(deleteIds.length === 1 ? MESSAGES.customerRemoved : MESSAGES.customersRemoved(deleteIds.length))
     ui.requestDelete(null)
   }
 
@@ -55,14 +56,14 @@ export function LeadModals() {
       <Overlay
         open={leadForm.open}
         onClose={ui.closeLeadForm}
-        title={editing ? 'Edit lead' : 'Add lead'}
-        description={editing ? 'Update this lead’s details.' : 'Add a potential client to your pipeline.'}
+        title={editing ? 'Edit Customer' : 'Add New Customer'}
+        description={editing ? 'Update this customer’s details.' : 'Add a new contact to your list.'}
         variant="modal"
         footer={
           <>
             <Button onClick={ui.closeLeadForm}>Cancel</Button>
             <Button variant="primary" type="submit" form="lead-form" disabled={busy}>
-              {busy ? 'Saving…' : editing ? 'Save changes' : 'Add lead'}
+              {busy ? 'Saving…' : editing ? 'Save Changes' : 'Add Customer'}
             </Button>
           </>
         }
@@ -71,16 +72,16 @@ export function LeadModals() {
       </Overlay>
       <ConfirmationDialog
         open={deleteIds !== null}
-        title={deleteIds && deleteIds.length > 1 ? `Delete ${deleteIds.length} leads?` : 'Delete this lead?'}
-        message={`${deleteName ? `${deleteName} and their` : 'These leads and their'} follow-ups and activity will be removed. This can’t be undone.`}
-        confirmLabel={busy ? 'Deleting…' : 'Delete'}
+        title={deleteIds && deleteIds.length > 1 ? `Remove ${deleteIds.length} customers?` : 'Remove this customer?'}
+        message={`${deleteName ? `${deleteName} and their` : 'These customers and their'} reminders and activity will be removed. This cannot be undone.`}
+        confirmLabel={busy ? 'Removing…' : 'Remove'}
         onConfirm={handleDelete}
         onCancel={() => ui.requestDelete(null)}
       />
       {ui.toast && (
         <div
           role={isError ? 'alert' : 'status'}
-          className={`fixed bottom-4 left-1/2 z-[60] flex max-w-[90vw] -translate-x-1/2 items-center gap-2 rounded-md px-4 py-2.5 text-sm text-white shadow-lg ${isError ? 'bg-rose-700' : 'bg-slate-900'}`}
+          className={`fixed bottom-6 left-1/2 z-[60] flex max-w-[90vw] -translate-x-1/2 items-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-white shadow-xl animate-fade-up ${isError ? 'bg-rose-600' : 'bg-slate-900'}`}
         >
           {isError
             ? <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
