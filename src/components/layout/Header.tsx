@@ -15,7 +15,7 @@ export function Header() {
   const { leads, followUps } = useCrm()
   const { user, logout } = useAuth()
   const overdue = groupFollowUps(followUps).overdue
-  const title = NAV_ITEMS.find((n) => n.id === route)?.label ?? 'Overview'
+  const title = NAV_ITEMS.find((n) => n.id === route)?.label ?? 'Summary'
   const itemClass = 'flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50'
 
   return (
@@ -25,11 +25,11 @@ export function Header() {
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
         <SearchBar
-          label="Search leads"
-          placeholder="Search leads"
+          label="Search customers"
+          placeholder="Search customers"
           value={globalSearch}
           onChange={setGlobalSearch}
-          onSubmit={() => navigate('leads')}
+          onSubmit={() => navigate('customers')}
           className="hidden w-56 sm:block lg:w-72"
         />
 
@@ -41,20 +41,20 @@ export function Header() {
         }>
           {(close) => (
             <div>
-              <p className="border-b border-slate-100 px-3 py-2 text-sm font-medium text-slate-900">Overdue follow-ups ({overdue.length})</p>
-              {overdue.length === 0 && <p className="px-3 py-4 text-sm text-slate-500">Youâ€™re all caught up.</p>}
+              <p className="border-b border-slate-100 px-3 py-2 text-sm font-medium text-slate-900">Overdue reminders ({overdue.length})</p>
+              {overdue.length === 0 && <p className="px-3 py-4 text-sm text-slate-500">You’re all caught up.</p>}
               {overdue.slice(0, 4).map((f) => (
-                <button key={f.id} type="button" className={`${itemClass} flex-col items-start gap-0.5`} onClick={() => { navigate('followups'); close() }}>
-                  <span className="font-medium">{leads.find((l) => l.id === f.leadId)?.name ?? 'Unknown lead'}</span>
-                  <span className="text-xs text-slate-500">{formatDateTime(f.scheduledAt)} Â· {f.notes}</span>
+                <button key={f.id} type="button" className={`${itemClass} flex-col items-start gap-0.5`} onClick={() => { navigate('reminders'); close() }}>
+                  <span className="font-medium">{leads.find((l) => l.id === f.leadId)?.name ?? 'Unknown'}</span>
+                  <span className="text-xs text-slate-500">{formatDateTime(f.scheduledAt)} · {f.notes}</span>
                 </button>
               ))}
             </div>
           )}
         </Popover>
 
-        <Button variant="primary" onClick={() => openLeadForm()} aria-label="Add lead">
-          <Plus className="size-4" aria-hidden="true" /><span className="hidden sm:inline">Add lead</span>
+        <Button variant="primary" onClick={() => openLeadForm()} aria-label="Add customer">
+          <Plus className="size-4" aria-hidden="true" /><span className="hidden sm:inline">Add Customer</span>
         </Button>
 
         <Popover label="Account menu" trigger={<Avatar name={user?.name ?? ''} />}>
