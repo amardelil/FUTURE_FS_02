@@ -1,80 +1,57 @@
-import { BarChart3, CalendarCheck, ChevronsLeft, ChevronsRight, LayoutDashboard, Settings, Users, X, type LucideIcon } from 'lucide-react'
+import { BarChart3, CheckSquare, CreditCard, HelpCircle, LayoutDashboard, Settings, Users } from 'lucide-react'
 import { useUi } from '@/context/UiContext'
+import { BRAND } from '@/lib/copy'
 import type { RouteId } from '@/types'
 
-export const NAV_ITEMS: { id: RouteId; label: string; icon: LucideIcon }[] = [
-  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { id: 'leads', label: 'Leads', icon: Users },
-  { id: 'followups', label: 'Follow-ups', icon: CalendarCheck },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+export const NAV_ITEMS: { id: RouteId; label: string; icon: any }[] = [
+  { id: 'summary', label: 'Summary', icon: LayoutDashboard },
+  { id: 'customers', label: 'Customers', icon: Users },
+  { id: 'reminders', label: 'Reminders', icon: CheckSquare },
+  { id: 'reports', label: 'Reports', icon: BarChart3 },
+  { id: 'plan', label: 'My Plan', icon: CreditCard },
+  { id: 'guide', label: 'Help & Guide', icon: HelpCircle },
   { id: 'settings', label: 'Settings', icon: Settings },
 ]
 
-function Brand({ collapsed }: { collapsed: boolean }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-indigo-600 text-white" aria-hidden="true">
-        <BarChart3 className="size-4" />
-      </span>
-      {!collapsed && <span className="text-[15px] font-semibold tracking-tight text-slate-900">LeadFlow</span>}
-    </div>
-  )
-}
-
-function NavList({ collapsed }: { collapsed: boolean }) {
-  const { route } = useUi()
-  return (
-    <nav aria-label="Main" className="flex flex-col gap-0.5 px-3 py-3">
-      {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
-        const active = route === id
-        return (
-          <a
-            key={id}
-            href={`#/${id}`}
-            title={collapsed ? label : undefined}
-            aria-current={active ? 'page' : undefined}
-            className={`flex h-9 items-center gap-3 rounded-md px-2.5 text-sm font-medium ${collapsed ? 'justify-center' : ''} ${
-              active ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-            }`}
-          >
-            <Icon className="size-4 shrink-0" aria-hidden="true" />
-            {collapsed ? <span className="sr-only">{label}</span> : label}
-          </a>
-        )
-      })}
-    </nav>
-  )
-}
-
 export function Sidebar() {
-  const { sidebarCollapsed, toggleSidebar, mobileNavOpen, setMobileNavOpen } = useUi()
+  const { route, navigate, sidebarCollapsed, toggleSidebar, mobileNavOpen, setMobileNavOpen } = useUi()
+
   return (
     <>
-      <aside className={`sticky top-0 hidden h-screen shrink-0 flex-col border-r border-slate-200 bg-white lg:flex ${sidebarCollapsed ? 'w-16' : 'w-60'}`}>
-        <div className={`flex h-14 items-center border-b border-slate-200 ${sidebarCollapsed ? 'justify-center' : 'px-5'}`}><Brand collapsed={sidebarCollapsed} /></div>
-        <NavList collapsed={sidebarCollapsed} />
-        <button
-          type="button"
-          onClick={toggleSidebar}
-          aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className={`mx-3 mt-auto mb-3 flex h-9 items-center gap-3 rounded-md px-2.5 text-sm text-slate-500 hover:bg-slate-100 ${sidebarCollapsed ? 'justify-center' : ''}`}
-        >
-          {sidebarCollapsed ? <ChevronsRight className="size-4" /> : <><ChevronsLeft className="size-4" />Collapse</>}
-        </button>
-      </aside>
-
       {mobileNavOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div className="absolute inset-0 bg-slate-900/40" onClick={() => setMobileNavOpen(false)} aria-hidden="true" />
-          <aside className="relative flex w-64 flex-col bg-white shadow-xl" aria-label="Navigation menu">
-            <div className="flex h-14 items-center justify-between border-b border-slate-200 px-5">
-              <Brand collapsed={false} />
-              <button type="button" aria-label="Close menu" onClick={() => setMobileNavOpen(false)} className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100"><X className="size-4" /></button>
-            </div>
-            <NavList collapsed={false} />
-          </aside>
-        </div>
+        <div className="fixed inset-0 z-40 bg-slate-900/50 lg:hidden" onClick={() => setMobileNavOpen(false)} />
       )}
+      <aside className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform lg:static lg:translate-x-0 ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'} ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'}`}>
+        <div className="flex h-14 shrink-0 items-center gap-3 border-b border-slate-100 px-4">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white">
+            <BarChart3 className="size-4" />
+          </span>
+          {!sidebarCollapsed && <span className="truncate font-semibold tracking-tight text-slate-900">{BRAND.name}</span>}
+        </div>
+        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+          {NAV_ITEMS.map((item) => {
+            const active = route === item.id
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => { navigate(item.id); setMobileNavOpen(false) }}
+                className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${active ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                title={sidebarCollapsed ? item.label : undefined}
+              >
+                <item.icon className={`size-4 shrink-0 ${active ? 'text-indigo-600' : 'text-slate-400'}`} />
+                {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+              </button>
+            )
+          })}
+        </nav>
+        <div className="border-t border-slate-100 p-3">
+          <button type="button" onClick={toggleSidebar} className="hidden w-full items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 lg:flex">
+            <span className="sr-only">Toggle sidebar</span>
+            <svg className={`size-5 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg>
+          </button>
+        </div>
+      </aside>
     </>
   )
 }
