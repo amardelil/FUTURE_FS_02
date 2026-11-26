@@ -1,10 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Lead, RouteId } from '@/types'
 
-const ROUTES: RouteId[] = ['overview', 'leads', 'followups', 'analytics', 'settings']
+const ROUTES: RouteId[] = ['summary', 'customers', 'reminders', 'reports', 'plan', 'guide', 'settings']
 const readRoute = (): RouteId => {
   const id = window.location.hash.replace('#/', '') as RouteId
-  return ROUTES.includes(id) ? id : 'overview'
+  return ROUTES.includes(id) ? id : 'summary'
 }
 
 export interface Toast { message: string; kind: 'success' | 'error' }
