@@ -1,11 +1,12 @@
-import type { ReactNode } from 'react'
-import { Building2, Mail, Pencil, Phone, Trash2, Tag } from 'lucide-react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { Building2, CalendarPlus, Mail, Pencil, Phone, Tag, Trash2 } from 'lucide-react'
 import { Overlay } from '@/components/ui/Overlay'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { LeadStatusBadge } from '@/components/ui/Badges'
 import { ActivityTimeline } from '@/components/activity/ActivityTimeline'
 import { FollowUpCard } from '@/components/followups/FollowUpCard'
+import { FollowUpForm } from '@/components/followups/FollowUpForm'
 import { useCrm } from '@/context/CrmContext'
 import { formatDate } from '@/lib/format'
 import type { Activity, FollowUp, Lead } from '@/types'
@@ -19,22 +20,33 @@ interface Props {
   onDelete: (lead: Lead) => void
 }
 
-const Section = ({ title, children }: { title: string; children: ReactNode }) => (
+const Section = ({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) => (
   <section className="border-t border-slate-100 py-4 first:border-0 first:pt-0">
-    <h3 className="mb-2 text-sm font-semibold text-slate-900">{title}</h3>
+    <div className="mb-2 flex items-center justify-between">
+      <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+      {action}
+    </div>
     {children}
   </section>
 )
 
 export function LeadDetailsDrawer({ lead, followUps, activities, onClose, onEdit, onDelete }: Props) {
-  const { toggleFollowUp } = useCrm()
+  const { toggleFollowUp, deleteFollowUp, addFollowUp } = useCrm()
+  const [scheduling, setScheduling] = useState(false)
+  useEffect(() => setScheduling(false), [lead?.id])
+
   return (
     <Overlay
       open={lead !== null}
       onClose={onClose}
       title="Lead details"
       variant="drawer"
-      footer={lead && <><Button variant="ghost" className="mr-auto text-rose-700 hover:bg-rose-50" onClick={() => onDelete(lead)}><Trash2 className="size-4" />Delete</Button><Button variant="primary" onClick={() => onEdit(lead)}><Pencil className="size-4" />Edit lead</Button></>}
+      footer={lead && (
+        <>
+          <Button variant="ghost" className="mr-auto text-rose-700 hover:bg-rose-50" onClick={() => onDelete(lead)}><Trash2 className="size-4" />Delete</Button>
+          <Button variant="primary" onClick={() => onEdit(lead)}><Pencil className="size-4" />Edit lead</Button>
+        </>
+      )}
     >
       {lead && (
         <>
@@ -59,10 +71,18 @@ export function LeadDetailsDrawer({ lead, followUps, activities, onClose, onEdit
             </dl>
           </Section>
           <Section title="Notes"><p className="whitespace-pre-wrap text-sm text-slate-600">{lead.notes || 'No notes yet. Use Edit lead to add some.'}</p></Section>
-          <Section title="Follow-ups">
-            {followUps.length === 0 ? <p className="text-sm text-slate-500">No follow-ups for this lead.</p> : (
-              <ul className="space-y-2">{followUps.map((f) => <li key={f.id}><FollowUpCard followUp={f} compact onToggle={toggleFollowUp} /></li>)}</ul>
+          <Section
+            title="Follow-ups"
+            action={!scheduling && (
+              <button type="button" onClick={() => setScheduling(true)} className="inline-flex items-center gap-1 rounded text-sm font-medium text-indigo-700 hover:underline">
+                <CalendarPlus className="size-4" aria-hidden="true" />Schedule
+              </button>
             )}
+          >
+            {scheduling && <div className="mb-3"><FollowUpForm leadId={lead.id} onSubmit={addFollowUp} onCancel={() => setScheduling(false)} /></div>}
+            {followUps.length === 0 && !scheduling
+              ? <p className="text-sm text-slate-500">No follow-ups for this lead.</p>
+              : <ul className="space-y-2">{followUps.map((f) => <li key={f.id}><FollowUpCard followUp={f} compact onToggle={toggleFollowUp} onDelete={deleteFollowUp} /></li>)}</ul>}
           </Section>
           <Section title="Activity"><ActivityTimeline activities={activities} emptyText="No activity yet." /></Section>
         </>
