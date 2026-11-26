@@ -1,8 +1,8 @@
 import { useCrm } from '@/context/CrmContext'
 import { useUi } from '@/context/UiContext'
-import { mockTrends } from '@/data/mock'
 import { countByStatus, STATUSES } from '@/lib/leads'
 import { formatDate } from '@/lib/format'
+import { growthVsPrevious } from '@/lib/trends'
 import { ActivityTimeline } from '@/components/activity/ActivityTimeline'
 import { Avatar } from '@/components/ui/Avatar'
 import { STATUS_DOT } from '@/components/ui/Badges'
@@ -16,13 +16,11 @@ export function OverviewPage() {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-slate-500">Sample data for Phase 1. Changes you make here aren’t saved and reset when you refresh.</p>
-
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <MetricCard label="Total leads" value={leads.length} change={mockTrends.total} />
-        <MetricCard label="New leads" value={counts.new} change={mockTrends.new} />
-        <MetricCard label="Contacted" value={counts.contacted} change={mockTrends.contacted} />
-        <MetricCard label="Converted" value={counts.converted} change={mockTrends.converted} />
+        <MetricCard label="Total leads" value={leads.length} change={growthVsPrevious(leads)} hint="added vs previous 30 days" />
+        <MetricCard label="New leads" value={counts.new} hint="waiting for first contact" />
+        <MetricCard label="Contacted" value={counts.contacted} hint="in conversation" />
+        <MetricCard label="Converted" value={counts.converted} hint="now customers" />
       </div>
 
       <section aria-label="Lead pipeline">
@@ -61,7 +59,7 @@ export function OverviewPage() {
         <div className="min-w-0 xl:col-span-2"><LeadsExplorer title="Recent leads" pageSize={5} /></div>
         <section aria-label="Recent activity" className="h-fit rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <h2 className="mb-4 text-sm font-semibold text-slate-900">Recent activity</h2>
-          <ActivityTimeline activities={activities} limit={7} />
+          <ActivityTimeline activities={activities} limit={7} emptyText="Activity appears here as you add and update leads." />
         </section>
       </div>
     </div>
