@@ -1,4 +1,4 @@
-import { CalendarClock, Check } from 'lucide-react'
+import { CalendarClock, Check, Trash2 } from 'lucide-react'
 import { PriorityIndicator } from '@/components/ui/Badges'
 import { formatDateTime } from '@/lib/format'
 import type { FollowUp } from '@/types'
@@ -8,10 +8,11 @@ interface Props {
   leadName?: string
   compact?: boolean
   onToggle: (id: string) => void
+  onDelete?: (id: string) => void
   onOpenLead?: () => void
 }
 
-export function FollowUpCard({ followUp, leadName, compact = false, onToggle, onOpenLead }: Props) {
+export function FollowUpCard({ followUp, leadName, compact = false, onToggle, onDelete, onOpenLead }: Props) {
   const overdue = !followUp.completed && Date.parse(followUp.scheduledAt) < Date.now()
   return (
     <div className={`flex items-start gap-3 rounded-lg border bg-white ${compact ? 'p-3' : 'p-4 shadow-sm'} ${overdue ? 'border-rose-200' : 'border-slate-200'}`}>
@@ -29,7 +30,7 @@ export function FollowUpCard({ followUp, leadName, compact = false, onToggle, on
         {leadName && (
           <button type="button" onClick={onOpenLead} className="text-sm font-medium text-slate-900 hover:text-indigo-700 hover:underline">{leadName}</button>
         )}
-        <p className={`text-sm ${followUp.completed ? 'text-slate-400 line-through' : 'text-slate-600'}`}>{followUp.notes}</p>
+        <p className={`text-sm ${followUp.completed ? 'text-slate-400 line-through' : 'text-slate-600'}`}>{followUp.notes || 'No notes'}</p>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
           <span className={`inline-flex items-center gap-1.5 text-xs ${overdue ? 'font-medium text-rose-700' : 'text-slate-500'}`}>
             <CalendarClock className="size-3.5" aria-hidden="true" />{overdue && 'Overdue · '}{formatDateTime(followUp.scheduledAt)}
@@ -37,6 +38,11 @@ export function FollowUpCard({ followUp, leadName, compact = false, onToggle, on
           <PriorityIndicator priority={followUp.priority} />
         </div>
       </div>
+      {onDelete && (
+        <button type="button" onClick={() => onDelete(followUp.id)} aria-label="Delete follow-up" className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-rose-700">
+          <Trash2 className="size-4" />
+        </button>
+      )}
     </div>
   )
 }
