@@ -1,12 +1,12 @@
 import type { Activity, FollowUp, Lead, LeadSource, LeadStatus, SortState } from '@/types'
+import { STATUS_LABEL } from './copy'
 
 export const SOURCES: LeadSource[] = ['Website', 'Referral', 'LinkedIn', 'Cold email', 'Event', 'Social media']
-export const STATUSES: { value: LeadStatus; label: string }[] = [
-  { value: 'new', label: 'New' },
-  { value: 'contacted', label: 'Contacted' },
-  { value: 'converted', label: 'Converted' },
-]
-export const statusLabel = (s: LeadStatus): string => STATUSES.find((x) => x.value === s)?.label ?? s
+export const STATUSES: { value: LeadStatus; label: string }[] = (['new', 'contacted', 'converted'] as const).map((value) => ({
+  value,
+  label: STATUS_LABEL[value],
+}))
+export const statusLabel = (s: LeadStatus): string => STATUS_LABEL[s]
 
 export interface LeadFilters { query: string; status: LeadStatus | 'all'; source: LeadSource | 'all' }
 
