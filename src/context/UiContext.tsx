@@ -7,6 +7,8 @@ const readRoute = (): RouteId => {
   return ROUTES.includes(id) ? id : 'overview'
 }
 
+export interface Toast { message: string; kind: 'success' | 'error' }
+
 interface UiValue {
   route: RouteId
   navigate: (route: RouteId) => void
@@ -23,8 +25,8 @@ interface UiValue {
   viewLead: (id: string | null) => void
   deleteIds: string[] | null
   requestDelete: (ids: string[] | null) => void
-  toast: string | null
-  showToast: (message: string) => void
+  toast: Toast | null
+  showToast: (message: string, kind?: Toast['kind']) => void
 }
 
 const UiContext = createContext<UiValue | null>(null)
@@ -37,7 +39,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
   const [leadForm, setLeadForm] = useState<UiValue['leadForm']>({ open: false, lead: null })
   const [detailsLeadId, viewLead] = useState<string | null>(null)
   const [deleteIds, requestDelete] = useState<string[] | null>(null)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<Toast | null>(null)
 
   useEffect(() => {
     const onHash = () => { setRoute(readRoute()); setMobileNavOpen(false) }
@@ -47,7 +49,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!toast) return
-    const t = window.setTimeout(() => setToast(null), 3200)
+    const t = window.setTimeout(() => setToast(null), 4000)
     return () => window.clearTimeout(t)
   }, [toast])
 
@@ -55,12 +57,13 @@ export function UiProvider({ children }: { children: ReactNode }) {
   const toggleSidebar = useCallback(() => setCollapsed((c) => !c), [])
   const openLeadForm = useCallback((lead?: Lead) => setLeadForm({ open: true, lead: lead ?? null }), [])
   const closeLeadForm = useCallback(() => setLeadForm({ open: false, lead: null }), [])
+  const showToast = useCallback((message: string, kind: Toast['kind'] = 'success') => setToast({ message, kind }), [])
 
   const value = useMemo<UiValue>(() => ({
     route, navigate, sidebarCollapsed, toggleSidebar, mobileNavOpen, setMobileNavOpen,
     globalSearch, setGlobalSearch, leadForm, openLeadForm, closeLeadForm,
-    detailsLeadId, viewLead, deleteIds, requestDelete, toast, showToast: setToast,
-  }), [route, navigate, sidebarCollapsed, toggleSidebar, mobileNavOpen, globalSearch, leadForm, openLeadForm, closeLeadForm, detailsLeadId, deleteIds, toast])
+    detailsLeadId, viewLead, deleteIds, requestDelete, toast, showToast,
+  }), [route, navigate, sidebarCollapsed, toggleSidebar, mobileNavOpen, globalSearch, leadForm, openLeadForm, closeLeadForm, detailsLeadId, deleteIds, toast, showToast])
 
   return <UiContext.Provider value={value}>{children}</UiContext.Provider>
 }
