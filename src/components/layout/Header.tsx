@@ -1,4 +1,5 @@
-import { Bell, Menu, Plus, Settings, User, LogOut } from 'lucide-react'
+import { Bell, LogOut, Menu, Plus, Settings, User } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
 import { useCrm } from '@/context/CrmContext'
 import { useUi } from '@/context/UiContext'
 import { formatDateTime } from '@/lib/format'
@@ -12,6 +13,7 @@ import { NAV_ITEMS } from './Sidebar'
 export function Header() {
   const { route, navigate, setMobileNavOpen, globalSearch, setGlobalSearch, openLeadForm } = useUi()
   const { leads, followUps } = useCrm()
+  const { user, logout } = useAuth()
   const overdue = groupFollowUps(followUps).overdue
   const title = NAV_ITEMS.find((n) => n.id === route)?.label ?? 'Overview'
   const itemClass = 'flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50'
@@ -55,16 +57,16 @@ export function Header() {
           <Plus className="size-4" aria-hidden="true" /><span className="hidden sm:inline">Add lead</span>
         </Button>
 
-        <Popover label="Account menu" trigger={<Avatar name="Demo User" />}>
+        <Popover label="Account menu" trigger={<Avatar name={user?.name ?? ''} />}>
           {(close) => (
             <div>
               <div className="border-b border-slate-100 px-3 py-2">
-                <p className="text-sm font-medium text-slate-900">Demo User</p>
-                <p className="text-xs text-slate-500">Demo workspace</p>
+                <p className="truncate text-sm font-medium text-slate-900">{user?.name}</p>
+                <p className="truncate text-xs text-slate-500">{user?.email}</p>
               </div>
               <button type="button" className={itemClass} onClick={() => { navigate('settings'); close() }}><User className="size-4" />Profile</button>
               <button type="button" className={itemClass} onClick={() => { navigate('settings'); close() }}><Settings className="size-4" />Settings</button>
-              <button type="button" disabled className={`${itemClass} cursor-not-allowed text-slate-400 hover:bg-white`}><LogOut className="size-4" />Sign out (needs Phase 2)</button>
+              <button type="button" className={itemClass} onClick={logout}><LogOut className="size-4" />Sign out</button>
             </div>
           )}
         </Popover>
