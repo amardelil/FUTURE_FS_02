@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle2, MessageSquare, SearchX, Trash2, X } from 'lucide-react'
+import { CheckCircle2, MessageSquare, SearchX, Trash2, X, Plus } from 'lucide-react'
 import { useCrm } from '@/context/CrmContext'
 import { useUi } from '@/context/UiContext'
 import { useLeadTable } from '@/hooks/useLeadTable'
@@ -10,10 +10,10 @@ import { Pagination } from '@/components/ui/Pagination'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { LeadsTable } from './LeadsTable'
 import type { LeadSource, LeadStatus } from '@/types'
+import { EMPTY } from '@/lib/copy'
 
 interface Props { title?: string; pageSize: number; bulk?: boolean; initialQuery?: string }
 
-/** Filters + table + pagination, shared by the Overview and Leads pages. */
 export function LeadsExplorer({ title, pageSize, bulk = false, initialQuery = '' }: Props) {
   const { leads, setStatus } = useCrm()
   const ui = useUi()
@@ -32,45 +32,48 @@ export function LeadsExplorer({ title, pageSize, bulk = false, initialQuery = ''
     const ok = await setStatus(live, status)
     setBusy(false)
     if (!ok) return
-    ui.showToast(`${live.length} lead${live.length === 1 ? '' : 's'} marked as ${status}`)
+    ui.showToast(`${live.length} ${live.length === 1 ? 'customer' : 'customers'} marked as ${status}.`)
     setSelected([])
   }
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-sm" aria-label={title ?? 'Leads'}>
-      <div className="flex flex-col gap-3 border-b border-slate-200 p-4 lg:flex-row lg:items-center">
-        {title && <h2 className="text-sm font-semibold text-slate-900 lg:mr-auto">{title}</h2>}
-        <div className="flex flex-wrap items-center gap-2">
-          <SearchBar label="Search by name, email, or company" placeholder="Name, email, or company" value={table.filters.query} onChange={(query) => table.update({ query })} className="w-full sm:w-64" />
-          <FilterDropdown<LeadStatus> label="Filter by status" allLabel="All statuses" value={table.filters.status} options={STATUSES} onChange={(status) => table.update({ status })} />
+    <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden" aria-label={title ?? 'Customers'}>
+      <div className="flex flex-col gap-4 border-b border-slate-100 p-5 lg:flex-row lg:items-center bg-slate-50/50">
+        {title && <h2 className="text-lg font-semibold text-slate-900 lg:mr-auto">{title}</h2>}
+        <div className="flex flex-wrap items-center gap-3">
+          <SearchBar label="Search by name, email, or company" placeholder="Search customers..." value={table.filters.query} onChange={(query) => table.update({ query })} className="w-full sm:w-64" />
+          <FilterDropdown<LeadStatus> label="Filter by status" allLabel="All levels" value={table.filters.status} options={STATUSES} onChange={(status) => table.update({ status })} />
           <FilterDropdown<LeadSource> label="Filter by source" allLabel="All sources" value={table.filters.source} options={SOURCES.map((s) => ({ value: s, label: s }))} onChange={(source) => table.update({ source })} />
         </div>
       </div>
 
       {bulk && live.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 border-b border-indigo-100 bg-indigo-50 px-4 py-2 text-sm" role="region" aria-label="Bulk actions">
-          <span className="font-medium text-indigo-900">{live.length} selected</span>
-          <Button className="h-8" disabled={busy} onClick={() => bulkStatus('contacted')}><MessageSquare className="size-3.5" />Mark contacted</Button>
-          <Button className="h-8" disabled={busy} onClick={() => bulkStatus('converted')}><CheckCircle2 className="size-3.5" />Mark converted</Button>
-          <Button className="h-8 text-rose-700" disabled={busy} onClick={() => ui.requestDelete(live)}><Trash2 className="size-3.5" />Delete</Button>
-          <button type="button" onClick={() => setSelected([])} className="ml-auto inline-flex items-center gap-1 rounded text-indigo-800 hover:underline"><X className="size-3.5" />Clear</button>
+        <div className="flex flex-wrap items-center gap-2 border-b border-indigo-100 bg-indigo-50/80 px-4 py-3 text-sm backdrop-blur-sm" role="region" aria-label="Bulk actions">
+          <span className="font-medium text-indigo-900 bg-indigo-200/50 px-2 py-0.5 rounded-full mr-2">{live.length} selected</span>
+          <Button className="h-8 bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50" disabled={busy} onClick={() => bulkStatus('contacted')}><MessageSquare className="size-3.5 mr-1" />Mark Contacted</Button>
+          <Button className="h-8 bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-50" disabled={busy} onClick={() => bulkStatus('converted')}><CheckCircle2 className="size-3.5 mr-1" />Mark Closed</Button>
+          <Button className="h-8 bg-white border-rose-200 text-rose-700 hover:bg-rose-50" disabled={busy} onClick={() => ui.requestDelete(live)}><Trash2 className="size-3.5 mr-1" />Remove</Button>
+          <button type="button" onClick={() => setSelected([])} className="ml-auto inline-flex items-center gap-1 rounded text-indigo-700 hover:underline font-medium"><X className="size-3.5" />Clear</button>
         </div>
       )}
 
       {table.total === 0 ? (
-        <div className="flex flex-col items-center gap-2 px-4 py-14 text-center">
-          <SearchX className="size-6 text-slate-400" aria-hidden="true" />
-          <p className="text-sm font-medium text-slate-900">{table.hasFilters ? 'No leads match these filters' : 'No leads yet'}</p>
-          <p className="text-sm text-slate-500">{table.hasFilters ? 'Try a different search or clear the filters.' : 'Add your first lead to start tracking your pipeline.'}</p>
+        <div className="flex flex-col items-center justify-center gap-3 px-4 py-20 text-center animate-fade-up">
+          <div className="flex size-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+            <SearchX className="size-8" aria-hidden="true" />
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-slate-900">{table.hasFilters ? 'No customers match these filters' : EMPTY.customers.title}</p>
+            <p className="mt-1 text-sm text-slate-500 max-w-sm">{table.hasFilters ? EMPTY.search.body : EMPTY.customers.body}</p>
+          </div>
           {table.hasFilters
-            ? <Button onClick={() => table.update({ query: '', status: 'all', source: 'all' })}>Clear filters</Button>
-            : <Button variant="primary" onClick={() => ui.openLeadForm()}>Add lead</Button>}
+            ? <Button className="mt-2" onClick={() => table.update({ query: '', status: 'all', source: 'all' })}>Clear filters</Button>
+            : <Button variant="primary" className="mt-2 shadow-sm" onClick={() => ui.openLeadForm()}><Plus className="size-4 mr-2" />{EMPTY.customers.action}</Button>}
         </div>
       ) : (
         <>
           <LeadsTable
             leads={table.rows}
-            sort={table.sort}
             onSort={table.toggleSort}
             selectable={bulk}
             selectedIds={live}
