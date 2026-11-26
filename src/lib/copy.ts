@@ -1,11 +1,10 @@
-import type { LeadStatus, Priority } from '@/types'
+ï»¿import type { LeadStatus, Priority } from '@/types'
 
 export const BRAND = {
   name: 'CustomerFlow',
   tagline: 'Every customer matters. Every opportunity grows.',
 }
 
-// Display text only. The stored values (new, contacted, converted) never change.
 export const STATUS_LABEL: Record<LeadStatus, string> = {
   new: 'New',
   contacted: 'Contacted',
@@ -13,9 +12,9 @@ export const STATUS_LABEL: Record<LeadStatus, string> = {
 }
 
 export const STATUS_HELP: Record<LeadStatus, string> = {
-  new: 'You haven’t contacted them yet',
-  contacted: 'You’ve reached out to them',
-  converted: 'They became a customer',
+  new: "You haven't contacted them yet",
+  contacted: "You've reached out to them",
+  converted: "They became a customer",
 }
 
 export const PRIORITY_LABEL: Record<Priority, string> = {
@@ -36,7 +35,7 @@ export const FIELD = {
 
 export const EMPTY = {
   customers: {
-    title: 'You haven’t added any customers yet.',
+    title: "You haven't added any customers yet.",
     body: 'Start building your customer list. Keep their details, conversations, and next steps all in one place.',
     action: 'Add your first customer',
   },
