@@ -19,6 +19,7 @@ export function LeadsExplorer({ title, pageSize, bulk = false, initialQuery = ''
   const ui = useUi()
   const table = useLeadTable(leads, pageSize, initialQuery)
   const [selected, setSelected] = useState<string[]>([])
+  const [busy, setBusy] = useState(false)
   const live = selected.filter((id) => leads.some((l) => l.id === id))
 
   const toggleOne = (id: string) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))
@@ -26,8 +27,11 @@ export function LeadsExplorer({ title, pageSize, bulk = false, initialQuery = ''
     const ids = table.rows.map((l) => l.id)
     setSelected((s) => (ids.every((id) => s.includes(id)) ? s.filter((id) => !ids.includes(id)) : [...new Set([...s, ...ids])]))
   }
-  const bulkStatus = (status: LeadStatus) => {
-    setStatus(live, status)
+  const bulkStatus = async (status: LeadStatus) => {
+    setBusy(true)
+    const ok = await setStatus(live, status)
+    setBusy(false)
+    if (!ok) return
     ui.showToast(`${live.length} lead${live.length === 1 ? '' : 's'} marked as ${status}`)
     setSelected([])
   }
@@ -46,9 +50,9 @@ export function LeadsExplorer({ title, pageSize, bulk = false, initialQuery = ''
       {bulk && live.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 border-b border-indigo-100 bg-indigo-50 px-4 py-2 text-sm" role="region" aria-label="Bulk actions">
           <span className="font-medium text-indigo-900">{live.length} selected</span>
-          <Button className="h-8" onClick={() => bulkStatus('contacted')}><MessageSquare className="size-3.5" />Mark contacted</Button>
-          <Button className="h-8" onClick={() => bulkStatus('converted')}><CheckCircle2 className="size-3.5" />Mark converted</Button>
-          <Button className="h-8 text-rose-700" onClick={() => ui.requestDelete(live)}><Trash2 className="size-3.5" />Delete</Button>
+          <Button className="h-8" disabled={busy} onClick={() => bulkStatus('contacted')}><MessageSquare className="size-3.5" />Mark contacted</Button>
+          <Button className="h-8" disabled={busy} onClick={() => bulkStatus('converted')}><CheckCircle2 className="size-3.5" />Mark converted</Button>
+          <Button className="h-8 text-rose-700" disabled={busy} onClick={() => ui.requestDelete(live)}><Trash2 className="size-3.5" />Delete</Button>
           <button type="button" onClick={() => setSelected([])} className="ml-auto inline-flex items-center gap-1 rounded text-indigo-800 hover:underline"><X className="size-3.5" />Clear</button>
         </div>
       )}
